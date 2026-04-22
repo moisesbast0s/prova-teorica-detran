@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { TOPIC_LABELS, TOPIC_COLORS } from '@/types'
 import { Topic } from '@prisma/client'
 import { ExamResult } from '@/types'
+import { getExamModeLabel, getPassingScore, isOfficialExam } from '@/lib/exam-rules'
 
 interface ResultSummaryProps {
   result: ExamResult
@@ -13,6 +14,15 @@ interface ResultSummaryProps {
 
 export function ResultSummary({ result, totalQuestions }: ResultSummaryProps) {
   const pct = Math.round((result.score / totalQuestions) * 100)
+  const official = isOfficialExam(totalQuestions)
+  const passingScore = getPassingScore(totalQuestions)
+  const resultLabel = official
+    ? result.passed
+      ? '✓ APROVADO'
+      : '✗ REPROVADO'
+    : result.passed
+      ? '✓ META ATINGIDA'
+      : 'META NÃO ATINGIDA'
 
   return (
     <div className="space-y-6">
@@ -42,12 +52,15 @@ export function ResultSummary({ result, totalQuestions }: ResultSummaryProps) {
             result.passed ? 'text-green-400' : 'text-red-400'
           )}
         >
-          {result.passed ? '✓ APROVADO' : '✗ REPROVADO'}
+          {resultLabel}
         </p>
 
-        <p className="text-muted-foreground text-sm mt-1">{pct}% de acertos</p>
+        <p className="text-muted-foreground text-sm mt-1">
+          {getExamModeLabel(totalQuestions)} · {pct}% de acertos · mínimo {passingScore}/
+          {totalQuestions}
+        </p>
 
-        {result.eliminatoryFailed && (
+        {official && result.eliminatoryFailed && (
           <div className="mt-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-xl flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0" />
             <p className="text-sm text-orange-300">

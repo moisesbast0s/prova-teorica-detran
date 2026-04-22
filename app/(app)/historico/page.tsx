@@ -18,6 +18,7 @@ import { TopicBreakdown } from '@/components/stats/TopicBreakdown'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart2 } from 'lucide-react'
 import type { Metadata } from 'next'
+import { getExamModeLabel, getResultLabel } from '@/lib/exam-rules'
 
 export const metadata: Metadata = {
   title: 'Histórico — DETRAN Quiz',
@@ -135,6 +136,7 @@ export default async function HistoricoPage({
             <TableHeader>
               <TableRow className="border-border/50 hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Data</TableHead>
+                <TableHead className="text-muted-foreground text-center">Tipo</TableHead>
                 <TableHead className="text-muted-foreground text-center">Questões</TableHead>
                 <TableHead className="text-muted-foreground text-center">Pontuação</TableHead>
                 <TableHead className="text-muted-foreground text-center">Resultado</TableHead>
@@ -147,6 +149,9 @@ export default async function HistoricoPage({
                     {format(new Date(exam.startedAt), "dd/MM/yyyy 'às' HH:mm", {
                       locale: ptBR,
                     })}
+                  </TableCell>
+                  <TableCell className="text-center text-muted-foreground">
+                    {getExamModeLabel(exam.totalQuestions)}
                   </TableCell>
                   <TableCell className="text-center text-muted-foreground">
                     {exam.totalQuestions}
@@ -162,7 +167,7 @@ export default async function HistoricoPage({
                           : 'bg-red-500/20 text-red-400 border border-red-500/30'
                       }
                     >
-                      {exam.passed ? '✓ Aprovado' : '✗ Reprovado'}
+                      {getResultLabel(exam.totalQuestions, exam.passed)}
                     </Badge>
                   </TableCell>
                 </TableRow>

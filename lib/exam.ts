@@ -1,11 +1,18 @@
 import { Topic } from '@prisma/client'
 import { prisma } from './prisma'
 import { ExamResult } from '@/types'
+import {
+  OFFICIAL_EXAM_PASSING_SCORE,
+  OFFICIAL_EXAM_TIME_MINUTES,
+  OFFICIAL_EXAM_TOTAL_QUESTIONS,
+  getPassingScore,
+  isOfficialExam,
+} from '@/lib/exam-rules'
 
 export const EXAM_RULES = {
-  totalQuestions: 30,
-  timeMinutes: 45,
-  passingScore: 21, // mínimo para aprovação (70%)
+  totalQuestions: OFFICIAL_EXAM_TOTAL_QUESTIONS,
+  timeMinutes: OFFICIAL_EXAM_TIME_MINUTES,
+  passingScore: OFFICIAL_EXAM_PASSING_SCORE,
   eliminatoryTopics: [Topic.PRIMEIROS_SOCORROS, Topic.MEIO_AMBIENTE] as Topic[],
 }
 
@@ -68,7 +75,8 @@ export function calculateResult(
     optionId: string | null
     isCorrect: boolean | null
     question: { topic: Topic }
-  }[]
+  }[],
+  totalQuestions: number
 ): ExamResult {
   const byTopic: Record<string, { correct: number; total: number; topic: Topic }> = {}
 
@@ -84,14 +92,16 @@ export function calculateResult(
   }
 
   const score = attempts.filter((a) => a.isCorrect).length
-  const passed = score >= EXAM_RULES.passingScore
+  const passed = score >= getPassingScore(totalQuestions)
 
   // Verificar se falhou em tema eliminatório (0 acertos no tema)
   const eliminatoryFailedTopics: Topic[] = []
-  for (const topic of EXAM_RULES.eliminatoryTopics) {
-    const stats = byTopic[topic]
-    if (stats && stats.total > 0 && stats.correct === 0) {
-      eliminatoryFailedTopics.push(topic)
+  if (isOfficialExam(totalQuestions)) {
+    for (const topic of EXAM_RULES.eliminatoryTopics) {
+      const stats = byTopic[topic]
+      if (stats && stats.total > 0 && stats.correct === 0) {
+        eliminatoryFailedTopics.push(topic)
+      }
     }
   }
 

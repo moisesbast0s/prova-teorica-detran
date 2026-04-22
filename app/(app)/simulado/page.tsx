@@ -8,11 +8,18 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TOPIC_LABELS, TOPIC_COLORS } from '@/types'
 import { Topic } from '@prisma/client'
-import { PlayCircle, Clock, BookOpen, CheckSquare } from 'lucide-react'
+import { PlayCircle, Clock, BookOpen, CheckSquare, GraduationCap, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  OFFICIAL_EXAM_PASSING_SCORE,
+  QUESTION_OPTIONS,
+  getExamModeLabel,
+  getPassingScore,
+  getTimeMinutes,
+  isOfficialExam,
+} from '@/lib/exam-rules'
 
 const ALL_TOPICS = Object.values(Topic)
-const QUESTION_OPTIONS = [10, 20, 30]
 
 export default function SimuladoPage() {
   const router = useRouter()
@@ -33,7 +40,9 @@ export default function SimuladoPage() {
     setSelectedTopics(allSelected ? [] : ALL_TOPICS)
   }
 
-  const estimatedTime = Math.ceil((totalQuestions / 30) * 45)
+  const estimatedTime = getTimeMinutes(totalQuestions)
+  const official = isOfficialExam(totalQuestions)
+  const passingScore = getPassingScore(totalQuestions)
 
   const handleStart = async () => {
     if (selectedTopics.length === 0) {
@@ -66,7 +75,9 @@ export default function SimuladoPage() {
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-black gradient-text">Novo Simulado</h1>
-        <p className="text-muted-foreground mt-1">Configure sua prova e teste seus conhecimentos</p>
+        <p className="text-muted-foreground mt-1">
+          Escolha treino rápido ou prova no formato oficial
+        </p>
       </div>
 
       {/* Topics */}
@@ -126,12 +137,16 @@ export default function SimuladoPage() {
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
             <Label className="text-base font-semibold flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-primary" />
-              Quantidade de Questões
+              {official ? (
+                <GraduationCap className="w-4 h-4 text-primary" />
+              ) : (
+                <Zap className="w-4 h-4 text-primary" />
+              )}
+              {getExamModeLabel(totalQuestions)}
             </Label>
             <span className="text-2xl font-black text-primary">{totalQuestions}</span>
           </div>
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {QUESTION_OPTIONS.map((n) => (
               <button
                 key={n}
@@ -144,10 +159,18 @@ export default function SimuladoPage() {
                     : 'border-border/50 bg-muted/20 text-muted-foreground hover:border-primary/40 hover:text-foreground'
                 )}
               >
-                {n}
+                <span className="block">{n}</span>
+                <span className="block text-[11px] font-medium opacity-70">
+                  {isOfficialExam(n) ? 'Oficial' : 'Treino'}
+                </span>
               </button>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            {official
+              ? `Aprovação com ${OFFICIAL_EXAM_PASSING_SCORE} acertos em 30 questões.`
+              : `Meta de treino: ${passingScore} acertos (${Math.round((passingScore / totalQuestions) * 100)}%).`}
+          </p>
         </CardContent>
       </Card>
 

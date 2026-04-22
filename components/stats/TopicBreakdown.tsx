@@ -23,6 +23,13 @@ interface TopicBreakdownProps {
   data: Record<string, TopicStats>
 }
 
+interface TooltipEntry {
+  payload?: {
+    topic?: string
+    fullName?: string
+  }
+}
+
 export function TopicBreakdown({ data }: TopicBreakdownProps) {
   const chartData = Object.entries(data).map(([topic, stats]) => ({
     name: TOPIC_LABELS[topic as Topic]?.split(' ')[0] ?? topic,
@@ -64,13 +71,14 @@ export function TopicBreakdown({ data }: TopicBreakdownProps) {
             color: '#0f172a',
             fontSize: '12px',
           }}
-          formatter={(value: unknown, _: unknown, entry: any) => [
-            `${value}% (${data[entry.payload.topic]?.correct ?? 0}/${data[entry.payload.topic]?.total ?? 0})`,
-            entry.payload.fullName,
-          ]}
+          formatter={(value: unknown, _: unknown, entry: TooltipEntry) => {
+            const topic = entry.payload?.topic ?? ''
+            const fullName = entry.payload?.fullName ?? topic
+            return [`${value}% (${data[topic]?.correct ?? 0}/${data[topic]?.total ?? 0})`, fullName]
+          }}
         />
         <Bar dataKey="taxa" radius={[4, 4, 0, 0]}>
-          {chartData.map((entry, i) => (
+          {chartData.map((entry) => (
             <Cell
               key={entry.topic}
               fill={TOPIC_COLORS[entry.topic as Topic] ?? '#6366f1'}

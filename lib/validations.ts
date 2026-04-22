@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { QUESTION_OPTIONS } from '@/lib/exam-rules'
 
 
 const TopicEnum = z.enum([
@@ -13,7 +14,12 @@ const TopicEnum = z.enum([
 
 export const createExamSchema = z.object({
   topics: z.array(TopicEnum).min(1, 'Selecione ao menos um tema'),
-  totalQuestions: z.number().int().min(10).max(30),
+  totalQuestions: z
+    .number()
+    .int()
+    .refine((value): value is (typeof QUESTION_OPTIONS)[number] => {
+      return QUESTION_OPTIONS.includes(value as (typeof QUESTION_OPTIONS)[number])
+    }, 'Escolha 10, 15, 20 ou 30 questões'),
 })
 
 export const attemptSchema = z.object({

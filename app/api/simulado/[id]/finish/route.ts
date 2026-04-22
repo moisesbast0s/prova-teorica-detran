@@ -55,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       include: { question: { select: { topic: true } } },
     })
 
-    const result = calculateResult(updatedAttempts)
+    const result = calculateResult(updatedAttempts, exam.totalQuestions)
 
     // Salvar resultado no simulado
     await prisma.simulatedExam.update({

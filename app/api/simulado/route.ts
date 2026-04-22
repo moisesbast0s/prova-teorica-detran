@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { generateExam, EXAM_RULES } from '@/lib/exam'
+import { generateExam } from '@/lib/exam'
 import { createExamSchema } from '@/lib/validations'
+import { getTimeMinutes } from '@/lib/exam-rules'
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         topics,
         totalQuestions,
-        timeMinutes: EXAM_RULES.timeMinutes,
+        timeMinutes: getTimeMinutes(totalQuestions),
         questionIds,
       },
     })

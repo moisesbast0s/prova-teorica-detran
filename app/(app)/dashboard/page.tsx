@@ -9,6 +9,7 @@ import { TopicBreakdown } from '@/components/stats/TopicBreakdown'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import type { Metadata } from 'next'
+import { getExamModeLabel, getResultLabel } from '@/lib/exam-rules'
 
 export const metadata: Metadata = {
   title: 'Dashboard — Simulado DETRAN',
@@ -32,8 +33,17 @@ export default async function DashboardPage() {
 
   const exams = user?.exams ?? []
   const totalExams = exams.length
-  const avgScore =
-    totalExams > 0 ? Math.round(exams.reduce((acc: number, e: typeof exams[0]) => acc + (e.score ?? 0), 0) / totalExams) : 0
+  const positiveResults = exams.filter((e) => e.passed).length
+  const avgRate =
+    totalExams > 0
+      ? Math.round(
+          exams.reduce(
+            (acc: number, e: typeof exams[0]) =>
+              acc + (((e.score ?? 0) / e.totalQuestions) * 100),
+            0
+          ) / totalExams
+        )
+      : 0
   const lastExam = exams[0] ?? null
 
   // Topic stats
@@ -79,16 +89,16 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           icon={<Trophy className="w-5 h-5 text-amber-400" />}
-          label="Simulados Realizados"
+          label="Atividades Realizadas"
           value={totalExams.toString()}
-          sub={totalExams === 0 ? 'Comece agora!' : `${exams.filter((e) => e.passed).length} aprovados`}
+          sub={totalExams === 0 ? 'Comece agora!' : `${positiveResults} com resultado positivo`}
           color="amber"
         />
         <StatCard
           icon={<Target className="w-5 h-5 text-primary" />}
-          label="Média de Acertos"
-          value={totalExams > 0 ? `${avgScore}` : '—'}
-          sub={totalExams > 0 ? `de 30 questões` : 'Sem dados'}
+          label="Média de Aproveitamento"
+          value={totalExams > 0 ? `${avgRate}%` : '—'}
+          sub={totalExams > 0 ? 'entre simulados e treinos' : 'Sem dados'}
           color="blue"
         />
         <StatCard
@@ -101,7 +111,7 @@ export default async function DashboardPage() {
           }
           sub={
             lastExam
-              ? `${lastExam.score ?? 0}/${lastExam.totalQuestions} — ${lastExam.passed ? '✓ Aprovado' : '✗ Reprovado'}`
+              ? `${lastExam.score ?? 0}/${lastExam.totalQuestions} — ${getResultLabel(lastExam.totalQuestions, lastExam.passed)}`
               : 'Nenhum ainda'
           }
           color="green"
@@ -157,7 +167,7 @@ export default async function DashboardPage() {
                       })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {exam.totalQuestions} questões
+                      {getExamModeLabel(exam.totalQuestions)} · {exam.totalQuestions} questões
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -170,7 +180,7 @@ export default async function DashboardPage() {
                         : 'bg-red-500/20 text-red-400'
                         }`}
                     >
-                      {exam.passed ? 'Aprovado' : 'Reprovado'}
+                      {getResultLabel(exam.totalQuestions, exam.passed)}
                     </span>
                   </div>
                 </div>

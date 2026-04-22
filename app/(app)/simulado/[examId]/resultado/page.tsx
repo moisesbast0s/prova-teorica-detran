@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlayCircle, History } from 'lucide-react'
 import { calculateResult } from '@/lib/exam'
-import { Attempt, Option, Question } from '@prisma/client'
+import { Option, Question } from '@prisma/client'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 
 
 type QuestionWithOptions = Question & { options: Option[] }
-type AttemptWithTopic = Attempt & { question: { topic: string } }
 
 export default async function ResultadoPage({
   params,
@@ -59,7 +58,7 @@ export default async function ResultadoPage({
   // Build attempt map
   const attemptMap = new Map(exam.attempts.map((a) => [a.questionId, a]))
 
-  const result = calculateResult(exam.attempts)
+  const result = calculateResult(exam.attempts, exam.totalQuestions)
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
