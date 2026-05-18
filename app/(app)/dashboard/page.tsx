@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Trophy, Target, Calendar, PlayCircle, TrendingUp } from 'lucide-react'
 import { PerformanceChart } from '@/components/stats/PerformanceChart'
-import { TopicBreakdown } from '@/components/stats/TopicBreakdown'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toZonedTime } from 'date-fns-tz'
@@ -47,26 +46,7 @@ export default async function DashboardPage() {
       : 0
   const lastExam = exams[0] ?? null
 
-  // Topic stats
-  const attempts = await prisma.attempt.findMany({
-    where: {
-      exam: { userId: user?.id ?? '', finishedAt: { not: null } },
-      isCorrect: { not: null },
-    },
-    include: { question: { select: { topic: true } } },
-  })
 
-  const topicStats: Record<string, { correct: number; total: number; rate: number }> = {}
-  for (const a of attempts) {
-    const t = a.question.topic
-    if (!topicStats[t]) topicStats[t] = { correct: 0, total: 0, rate: 0 }
-    topicStats[t].total++
-    if (a.isCorrect) topicStats[t].correct++
-  }
-  for (const k of Object.keys(topicStats)) {
-    const s = topicStats[k]
-    s.rate = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
-  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -119,32 +99,18 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="glass-card border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Evolução de Pontuação
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PerformanceChart data={exams} />
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Taxa de Acerto por Tema
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TopicBreakdown data={topicStats} />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Chart */}
+      <Card className="glass-card border-border/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Evolução de Pontuação
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PerformanceChart data={exams} />
+        </CardContent>
+      </Card>
 
       {/* Recent exams */}
       {exams.length > 0 && (
