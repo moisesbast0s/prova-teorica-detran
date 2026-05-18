@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     })
     if (!user) return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
 
-    const questionIds = await generateExam(topics, totalQuestions)
+    const questionIds = await generateExam(topics, totalQuestions, user.id)
 
     if (questionIds.length < totalQuestions) {
       return NextResponse.json(
