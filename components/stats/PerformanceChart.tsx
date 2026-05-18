@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { toZonedTime } from 'date-fns-tz'
 
 interface ExamData {
   id: string
@@ -30,7 +31,7 @@ export function PerformanceChart({ data }: PerformanceChartProps) {
     .reverse()
     .slice(-10)
     .map((exam) => ({
-      name: format(new Date(exam.startedAt), 'dd/MM', { locale: ptBR }),
+      name: format(toZonedTime(new Date(exam.startedAt), 'America/Sao_Paulo'), 'dd/MM', { locale: ptBR }),
       pontuacao: exam.score ?? 0,
       total: exam.totalQuestions,
       passed: exam.passed,

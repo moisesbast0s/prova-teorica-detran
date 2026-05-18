@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { format, subDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { toZonedTime } from 'date-fns-tz'
 import {
   Table,
   TableBody,
@@ -146,7 +147,7 @@ export default async function HistoricoPage({
               {exams.map((exam: typeof exams[0]) => (
                 <TableRow key={exam.id} className="border-border/50 hover:bg-white/5">
                   <TableCell className="font-medium">
-                    {format(new Date(exam.startedAt), "dd/MM/yyyy 'às' HH:mm", {
+                    {format(toZonedTime(new Date(exam.startedAt), 'America/Sao_Paulo'), "dd/MM/yyyy 'às' HH:mm", {
                       locale: ptBR,
                     })}
                   </TableCell>

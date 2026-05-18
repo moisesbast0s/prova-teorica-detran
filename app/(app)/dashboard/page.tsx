@@ -8,6 +8,7 @@ import { PerformanceChart } from '@/components/stats/PerformanceChart'
 import { TopicBreakdown } from '@/components/stats/TopicBreakdown'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { toZonedTime } from 'date-fns-tz'
 import type { Metadata } from 'next'
 import { getExamModeLabel, getResultLabel } from '@/lib/exam-rules'
 
@@ -106,7 +107,7 @@ export default async function DashboardPage() {
           label="Último Simulado"
           value={
             lastExam
-              ? format(new Date(lastExam.startedAt), "dd 'de' MMM", { locale: ptBR })
+              ? format(toZonedTime(new Date(lastExam.startedAt), 'America/Sao_Paulo'), "dd 'de' MMM", { locale: ptBR })
               : '—'
           }
           sub={
@@ -162,7 +163,7 @@ export default async function DashboardPage() {
                 >
                   <div>
                     <p className="text-sm font-medium">
-                      {format(new Date(exam.startedAt), "dd/MM/yyyy 'às' HH:mm", {
+                      {format(toZonedTime(new Date(exam.startedAt), 'America/Sao_Paulo'), "dd/MM/yyyy 'às' HH:mm", {
                         locale: ptBR,
                       })}
                     </p>
